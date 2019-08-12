@@ -1,0 +1,19 @@
+{
+  "name": "i18next_example",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test/"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "i18next": "^17.0.11",
+    "ramda": "^0.26.1"
+  },
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "mocha": "^6.2.0"
+  }
+}
