@@ -96,5 +96,49 @@ describe('to i18next transform', () => {
                 }
             })
         })
+
+        it('transform composite plurals without arguments', () => {
+            const content = contentWithKey(
+                '$pl[%$1s|girl|girls] and $pl[%$2s|boy|boys]'
+            );
+            const transform = Transform(content, lang);
+
+            expect(transform({
+                inputPath,
+                outputPath,
+                variables: ['numGirls', 'numBoys'],
+                plurals: ['girl', 'boy'],
+            })).to.be.deep.equal({
+                new: {
+                    path: '$t(girl, {\'count\': {{numGirls}}}) and $t(boy, {\'count\': {{numBoys}}})',
+                    girl: 'girl',
+                    girl_plural: 'girls',
+                    boy: 'boy',
+                    boy_plural: 'boys'
+                }
+            })
+        })
+
+        it('transform composite plurals with arguments', () => {
+            const content = contentWithKey(
+                'There are $pl[%$1s|%$1s orange|%$1s oranges] and $pl[%$2s|%$2s banana|%$2s bananas]'
+            );
+            const transform = Transform(content, lang);
+
+            expect(transform({
+                inputPath,
+                outputPath,
+                variables: ['numOranges', 'numBananas'],
+                plurals: ['orange', 'banana'],
+            })).to.be.deep.equal({
+                new: {
+                    path: 'There are $t(orange, {\'count\': {{numOranges}}}) and $t(banana, {\'count\': {{numBananas}}})',
+                    orange: '{{count}} orange',
+                    orange_plural: '{{count}} oranges',
+                    banana: '{{count}} banana',
+                    banana_plural: '{{count}} bananas'
+                }
+            })
+        })
     })        
 })
