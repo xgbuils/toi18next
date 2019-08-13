@@ -10,10 +10,10 @@ const contentWithKey = (key) => ({
 })
 const inputPath = ['path', 'to', 'key'];
 const outputPath = ['new', 'path'];
-const lang = 'en';
 
 describe('to i18next transform', () => {
     describe('testing transformations', () => {
+        const lang = 'en';
         it('transform simple key', () => {
             const content = contentWithKey('simple value');
             const transform = Transform(content, lang);
@@ -179,6 +179,86 @@ describe('to i18next transform', () => {
                     banana_plural: '{{count}} bananas with {{bananasPrice}}€ price',
                 }
             })
+        })
+    })
+
+    describe('testing plurals with other languages', () => {
+        describe('Japanese plurals (no plural)', () => {
+            it('ja', () => {
+                const lang = 'ja'
+                const content = contentWithKey(
+                    '$[_pl(%1$s|%1$s item)]'
+                );
+                const transform = Transform(content, lang);
+
+                expect(transform({
+                    inputPath,
+                    outputPath,
+                    variables: ['num'],
+                })).to.be.deep.equal({
+                    new: {
+                        path_0: '{{count}} item',
+                    }
+                })
+            });
+
+            it('ja-JP', () => {
+                const lang = 'ja-JP'
+                const content = contentWithKey(
+                    '$[_pl(%1$s|%1$s item)]'
+                );
+                const transform = Transform(content, lang);
+
+                expect(transform({
+                    inputPath,
+                    outputPath,
+                    variables: ['num'],
+                })).to.be.deep.equal({
+                    new: {
+                        path_0: '{{count}} item',
+                    }
+                })
+            });
+        })
+
+        describe('Polish plurals (two plurals)', () => {
+            it('pl', () => {
+                const lang = 'pl';
+                const content = contentWithKey(
+                    '$[_pl(%1$s|%1$s item)]'
+                );
+                const transform = Transform(content, lang);
+
+                expect(transform({
+                    inputPath,
+                    outputPath,
+                    variables: ['num'],
+                })).to.be.deep.equal({
+                    new: {
+                        path_0: '{{count}} item',
+                    }
+                })
+            });
+
+            it('pl-PL', () => {
+                const lang = 'pl-PL';
+                const content = contentWithKey(
+                    '$[_pl(%1$s|%1$s item|%1$s items|%1$s itemzz)]'
+                );
+                const transform = Transform(content, lang);
+
+                expect(transform({
+                    inputPath,
+                    outputPath,
+                    variables: ['num'],
+                })).to.be.deep.equal({
+                    new: {
+                        path_0: '{{count}} item',
+                        path_1: '{{count}} items',
+                        path_2: '{{count}} itemzz',
+                    }
+                })
+            });
         })
     })        
 })

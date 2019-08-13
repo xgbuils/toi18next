@@ -2,8 +2,6 @@ const R = require('ramda');
 const i18next = require('i18next');
 i18next.init();
 
-const lng = 'en';
-
 const getSuffixes = (lang) => {
     const rule = i18next.services.pluralResolver.getRule(lang);
     return rule.numbers.length === 2
