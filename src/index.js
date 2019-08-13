@@ -4,12 +4,6 @@ i18next.init();
 
 const lng = 'en';
 
-const cms = {
-    category: {
-        text: '$pl[%$1s|girl|girls] and $pl[%$2s|%$2s girl|%$2s girls] are %$3s people',
-    }
-};
-
 const getSuffixes = (lang) => {
     const rule = i18next.services.pluralResolver.getRule(lang);
     return rule.numbers.length === 2
@@ -18,15 +12,7 @@ const getSuffixes = (lang) => {
 }
 
 const i18nextVarRegExp = /^\{\{(.+?)\}\}$/;
-const pluralRegExp = /\$pl\[(.+?)\]/g
-
-const map = [{
-    inputPath: ['category', 'text'],
-    outputPath: ['friends'],
-    outputName: 'girlsAndBoys',
-    variables: ['numGirls', 'numBoys', 'numPeople'],
-    plurals: ['girls', 'boys']
-}]
+const pluralRegExp = /\$\[_pl\((.+?)\)\]/g
 
 const TokensBuilder = (variables) => {
     const tokens = [];
@@ -65,7 +51,7 @@ const getVariable = (text, variables, num) => {
 
 const replaceVariables = (variables, text) => {
     const vars = new Set();
-    const replacedText = text.replace(/%\$(\d+)s/g, (match, num) => {
+    const replacedText = text.replace(/%(\d+)\$s/g, (match, num) => {
         const variable = variables[parseInt(num) - 1];
         vars.add(variable);
         return `{{${variable}}}`;
@@ -106,10 +92,10 @@ const formatVariablesInPluralExpr = (variables, pluralVar, pluralName) => {
     const variablesObject = [...variables]
         .map((variable) => {
             return variable === pluralVar
-                ? `'count': {{${pluralVar}}}`
-                : `'${pluralVar}': {{${pluralVar}}}`;
+                ? `'count': {{${variable}}}`
+                : `'${variable}': {{${variable}}}`;
         })
-        .join(',');
+        .join(', ');
     return `$t(${pluralName}, {${variablesObject}})`;
 }
 
