@@ -37,8 +37,8 @@ const formatVariablesInPluralExpr = (variables, pluralVar, pluralName) => {
     const variablesObject = [...variables]
         .map((variable) => {
             return variable === pluralVar
-                ? `'count': {{${variable}}}`
-                : `'${variable}': {{${variable}}}`;
+                ? `count: {{${variable}}}`
+                : `${variable}: {{${variable}}}`;
         })
         .join(', ');
     return `$t(${pluralName}, {${variablesObject}})`;

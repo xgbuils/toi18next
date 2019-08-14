@@ -110,7 +110,7 @@ describe('to i18next transform', () => {
                 plurals: ['girl', 'boy'],
             })).to.be.deep.equal({
                 new: {
-                    path: '$t(girl, {\'count\': {{numGirls}}}) and $t(boy, {\'count\': {{numBoys}}})',
+                    path: '$t(girl, {count: {{numGirls}}}) and $t(boy, {count: {{numBoys}}})',
                     girl: 'girl',
                     girl_plural: 'girls',
                     boy: 'boy',
@@ -132,7 +132,7 @@ describe('to i18next transform', () => {
                 plurals: ['orange', 'banana'],
             })).to.be.deep.equal({
                 new: {
-                    path: 'There are $t(orange, {\'count\': {{numOranges}}}) and $t(banana, {\'count\': {{numBananas}}})',
+                    path: 'There are $t(orange, {count: {{numOranges}}}) and $t(banana, {count: {{numBananas}}})',
                     orange: '{{count}} orange',
                     orange_plural: '{{count}} oranges',
                     banana: '{{count}} banana',
@@ -172,7 +172,7 @@ describe('to i18next transform', () => {
                 args: ['orangesPrice', 'numOranges', 'numBananas', 'bananasPrice'],
             })).to.be.deep.equal({
                 new: {
-                    path: 'There are $t(orange, {\'count\': {{numOranges}}, \'orangesPrice\': {{orangesPrice}}}) and $t(banana, {\'count\': {{numBananas}}, \'bananasPrice\': {{bananasPrice}}})',
+                    path: 'There are $t(orange, {count: {{numOranges}}, orangesPrice: {{orangesPrice}}}) and $t(banana, {count: {{numBananas}}, bananasPrice: {{bananasPrice}}})',
                     orange: '{{count}} orange with {{orangesPrice}}€ price',
                     orange_plural: '{{count}} oranges with {{orangesPrice}}€ price',
                     banana: '{{count}} banana with {{bananasPrice}}€ price',
