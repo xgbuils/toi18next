@@ -1,5 +1,7 @@
 const R = require('ramda');
 const i18next = require('i18next');
+const isSimplePlural = require('./isSimplePlural');
+const parseCmsText = require('./parseCmsText');
 i18next.init();
 
 const getSuffixes = (lang) => {
@@ -10,30 +12,6 @@ const getSuffixes = (lang) => {
 }
 
 const i18nextVarRegExp = /^\{\{(.+?)\}\}$/;
-const pluralRegExp = /\$\[_pl\((.+?)\)\]/g
-
-const TokensBuilder = (variables) => {
-    const tokens = [];
-    return {
-        pushText(value) {
-            if (value) {
-                tokens.push({
-                    ...replaceVariables(variables, value),
-                    type: 'text',
-                })
-            }
-        },
-        pushPlural(value) {
-            tokens.push({
-                ...replaceVariables(variables, value),
-                type: 'plural',
-            })
-        },
-        build() {
-            return tokens;
-        }
-    }
-}
 
 const getVariable = (text, variables, num) => {
     const index = parseInt(num) - 1;
@@ -44,37 +22,6 @@ const getVariable = (text, variables, num) => {
             `it is just defined ${variables.length} arguments.`
         )
     }
-
-}
-
-const replaceVariables = (variables, text) => {
-    const vars = new Set();
-    const replacedText = text.replace(/%(\d+)\$s/g, (match, num) => {
-        const variable = variables[parseInt(num) - 1];
-        vars.add(variable);
-        return `{{${variable}}}`;
-    });
-    return {
-        value: replacedText,
-        vars,
-    };
-}
-
-const getTokens = (cmsValue, variables = []) => {
-    const tokensBuilder = TokensBuilder(variables);
-    let previousIndex = 0;
-    while(true) {
-        const result = pluralRegExp.exec(cmsValue);
-        if (!result) {
-            tokensBuilder.pushText(cmsValue.substring(previousIndex))
-            break;
-        }
-        const [match, pluralForms] = result;
-        tokensBuilder.pushText(cmsValue.substring(previousIndex, result.index))
-        tokensBuilder.pushPlural(pluralForms)
-        previousIndex = result.index + match.length;
-    }
-    return tokensBuilder.build();
 }
 
 const PluralSupplier = (plurals = [], defaultValue) => {
@@ -97,11 +44,7 @@ const formatVariablesInPluralExpr = (variables, pluralVar, pluralName) => {
     return `$t(${pluralName}, {${variablesObject}})`;
 }
 
-const isSimplePlural = (tokens) => {
-    return tokens.length === 1 && tokens[0].type === 'plural';
-}
-
-const createMainText = (tokens, plurals, outputName) => {
+const createMainText = ({tokens, plurals, outputName}) => {
     if (isSimplePlural(tokens)) {
         return {};
     }
@@ -140,13 +83,23 @@ const replaceText = (text, needle, replacement) => {
     return result;
 }
 
-const createPluralTexts = (tokens, plurals, lang, outputName) => {
-    const suffixes = getSuffixes(lang);
+const createPluralTexts = ({tokens, plurals, outputName, suffixes, text}) => {
+    const simplePluralCase = isSimplePlural(tokens);
     const pluralTokens = tokens
         .filter(({type}) => type === 'plural');
+    if (simplePluralCase && plurals.length > 0) {
+        const pluralVars = plurals.map((pluralType) => `'${pluralType}'`).join(', ');
+        throw new Error(`Simple plural text like "${text}" does not need plurals configuration.\n`
+            + `Found not needed 'plurals' configuration: {plurals: [${pluralVars}].\n`);
+    }
+    if (!simplePluralCase && pluralTokens.length !== plurals.length) {
+        throw new Error('The number of plural variables should not differ in CMS key plural expressions.\n'
+            + `${pluralTokens.length} plural expressions in "${text}".\n`
+            + `${plurals.length} plural variables in configuration: plurals: [${plurals.join(', ')}].\n`);
+    }
     const pluralSupplier = PluralSupplier(
         plurals,
-        isSimplePlural(tokens) ? outputName : 'undefined'
+        simplePluralCase ? outputName : 'undefined'
     );
     return pluralTokens
         .reduce((result, {value}) => {
@@ -166,16 +119,18 @@ const createPluralTexts = (tokens, plurals, lang, outputName) => {
 const Transform = (cms, lang) => ({
     inputPath,
     outputPath,
-    variables,
-    plurals
+    args,
+    plurals = []
 }) => {
-    const cmsValue = R.path(inputPath, cms);
-    const tokens = getTokens(cmsValue, variables);
-    const outputName = outputPath.slice(-1)[0]
-    const path = outputPath.slice(0, -1)
+    const text = R.path(inputPath, cms);
+    const tokens = parseCmsText(text, args);
+    const outputName = outputPath.slice(-1)[0];
+    const path = outputPath.slice(0, -1);
+    const suffixes = getSuffixes(lang);
+    const config = {tokens, plurals, outputName, suffixes, text};
     const obj = R.merge(
-        createMainText(tokens, plurals, outputName),
-        createPluralTexts(tokens, plurals, lang, outputName)
+        createMainText(config),
+        createPluralTexts(config)
     )
     return R.assocPath(path, obj, {})
 }
