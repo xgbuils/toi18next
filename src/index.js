@@ -1,4 +1,3 @@
-const R = require('ramda');
 const i18next = require('i18next');
 const isSimplePlural = require('./isSimplePlural');
 const parseCmsText = require('./parseCmsText');
@@ -130,23 +129,19 @@ const createPluralTexts = ({tokens, plurals, outputName, suffixes, text}) => {
         }, {});
 }
 
-const Transform = (cms, lang) => ({
-    inputPath,
-    outputPath,
+const Transform = (lang) => ({
+    text,
+    outputName,
     args,
     plurals = []
 }) => {
-    const text = R.path(inputPath, cms);
     const tokens = parseCmsText(text, args);
-    const outputName = outputPath.slice(-1)[0];
-    const path = outputPath.slice(0, -1);
     const suffixes = getSuffixes(lang);
     const config = {tokens, plurals, outputName, suffixes, text};
-    const obj = R.merge(
-        createMainText(config),
-        createPluralTexts(config)
-    )
-    return R.assocPath(path, obj, {})
+    return {
+        ...createMainText(config),
+        ...createPluralTexts(config)
+    };
 }
 
 module.exports = Transform;
