@@ -1,7 +1,5 @@
 const isSimplePlural = require('./isSimplePlural');
 
-const pluralRegExp = /\$\[_pl\((.+?)\)\]/g
-
 const isSpecialCase = (tokens, currentArgs, args) => {
     return isSimplePlural(tokens) && currentArgs.length === 1 && args.length <= 1;
 };
@@ -18,7 +16,7 @@ const ArgsReplacer = (args, cmsText) => {
                 const arg = args[index - 1];
                 indexes.add(index);
                 vars.add(arg);
-                return `{{${arg}}}`;
+                return index <= args.length ? `{{${arg}}}` : match;
             });
             return {
                 value: replacedText,
@@ -55,6 +53,18 @@ const ArgsReplacer = (args, cmsText) => {
     };
 };
 
+const pluralRegExp = /\$\[_pl0?\((.+?)\)\]/g;
+
+const trimPlural = (plural) => {
+    return plural
+        .replace(/^\$\[_pl0?\(/, '')
+        .replace(/\)\]$/, '');
+};
+
+const getPluralType = (plural) => {
+    return plural.startsWith('$[_pl0') ? 'pluralZero' : 'plural';
+};
+
 const TokensBuilder = (argsReplacer) => {
     const tokens = [];
     return {
@@ -68,8 +78,8 @@ const TokensBuilder = (argsReplacer) => {
         },
         pushPlural(value) {
             tokens.push({
-                ...argsReplacer.replace(value),
-                type: 'plural',
+                ...argsReplacer.replace(trimPlural(value)),
+                type: getPluralType(value),
             })
         },
         build() {
@@ -91,7 +101,7 @@ const parseCmsText = (text, args = []) => {
         }
         const [match, pluralForms] = result;
         tokensBuilder.pushText(text.substring(previousIndex, result.index));
-        tokensBuilder.pushPlural(pluralForms);
+        tokensBuilder.pushPlural(match);
         previousIndex = result.index + match.length;
     }
     return tokensBuilder.build();

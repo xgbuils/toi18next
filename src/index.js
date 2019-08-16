@@ -83,10 +83,29 @@ const replaceText = (text, needle, replacement) => {
     return result;
 }
 
+const getSpecialZeroSuffix = (suffixes, index) => {
+    return index === 0
+        ? '_none'
+        : `_some${suffixes[index - 1]}`;
+}
+
+const createPluralKey = ({type}, pluralName, suffixes, index) => {
+    return pluralName +
+        (type === 'pluralZero' ? getSpecialZeroSuffix(suffixes, index) : `${suffixes[index]}`);
+}
+
+const createPluralKeys = (token, pluralName, suffixes) => {
+    const [variable, ...pluralForms] = token.value.split('|');
+    return pluralForms.reduce((obj, pluralForm, index) => ({
+        ...obj,
+        [createPluralKey(token, pluralName, suffixes, index)]: replaceText(pluralForm, variable, `{{count}}`)
+    }), {});
+}
+
 const createPluralTexts = ({tokens, plurals, outputName, suffixes, text}) => {
     const simplePluralCase = isSimplePlural(tokens);
     const pluralTokens = tokens
-        .filter(({type}) => type === 'plural');
+        .filter(({type}) => type.startsWith('plural'));
     if (simplePluralCase && plurals.length > 0) {
         const pluralVars = plurals.map((pluralType) => `'${pluralType}'`).join(', ');
         throw new Error(`Simple plural text like "${text}" does not need plurals configuration.\n`
@@ -102,16 +121,11 @@ const createPluralTexts = ({tokens, plurals, outputName, suffixes, text}) => {
         simplePluralCase ? outputName : 'undefined'
     );
     return pluralTokens
-        .reduce((result, {value}) => {
-            const [variable, ...pluralForms] = value.split('|');
+        .reduce((result, token) => {
             const pluralName = pluralSupplier.get();
-            const text = pluralForms.reduce((obj, pluralForm, index) => ({
-                ...obj,
-                [`${pluralName}${suffixes[index]}`]: replaceText(pluralForm, variable, `{{count}}`)
-            }), {})
             return {
                 ...result,
-                ...text
+                ...createPluralKeys(token, pluralName, suffixes)
             };
         }, {});
 }

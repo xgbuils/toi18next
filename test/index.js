@@ -25,7 +25,7 @@ describe('to i18next transform', () => {
                 new: {
                     path: 'simple value'
                 }
-            })
+            });
         })
 
         it('transform key with variables', () => {
@@ -42,7 +42,7 @@ describe('to i18next transform', () => {
                 new: {
                     path: 'key {{two}} with {{three}} variables {{one}}'
                 }
-            })
+            });
         })
 
         it('transform key with arguments', () => {
@@ -59,7 +59,7 @@ describe('to i18next transform', () => {
                 new: {
                     path: 'key {{two}} with {{three}} variables {{one}}'
                 }
-            })
+            });
         })
 
         it('transform simple plural without argument', () => {
@@ -76,7 +76,7 @@ describe('to i18next transform', () => {
                     path: 'item',
                     path_plural: 'items',
                 }
-            })
+            });
         })
 
         it('transform simple plural with argument', () => {
@@ -95,7 +95,25 @@ describe('to i18next transform', () => {
                     path_plural: '{{count}} items',
                 }
             });
-        })
+        });
+
+        it('transform simple plural with zero special case', () => {
+            const content = contentWithKey(
+                '$[_pl0(%1$s|No items|%1$s item|%1$s items)]'
+            );
+            const transform = Transform(content, lang);
+
+            expect(transform({
+                inputPath,
+                outputPath,
+            })).to.be.deep.equal({
+                new: {
+                    path_none: 'No items',
+                    path_some: '{{count}} item',
+                    path_some_plural: '{{count}} items',
+                }
+            });
+        });
 
         it('transform composite plurals without arguments', () => {
             const content = contentWithKey(
@@ -117,7 +135,7 @@ describe('to i18next transform', () => {
                     boy_plural: 'boys'
                 }
             });
-        })
+        });
 
         it('transform composite plurals with arguments', () => {
             const content = contentWithKey(
@@ -136,10 +154,33 @@ describe('to i18next transform', () => {
                     orange: '{{count}} orange',
                     orange_plural: '{{count}} oranges',
                     banana: '{{count}} banana',
-                    banana_plural: '{{count}} bananas'
-                }
+                    banana_plural: '{{count}} bananas',
+                },
             });
-        })
+        });
+
+        it('transform composite plurals with zero special case', () => {
+            const content = contentWithKey(
+                'There are $[_pl0(%1$s|No oranges|%1$s orange|%1$s oranges)] and $[_pl(%2$s|%2$s banana|%2$s bananas)]'
+            );
+            const transform = Transform(content, lang);
+
+            expect(transform({
+                inputPath,
+                outputPath,
+                args: ['numOranges', 'numBananas'],
+                plurals: ['orange', 'banana'],
+            })).to.be.deep.equal({
+                new: {
+                    path: 'There are $t(orange, {count: {{numOranges}}}) and $t(banana, {count: {{numBananas}}})',
+                    orange_none: 'No oranges',
+                    orange_some: '{{count}} orange',
+                    orange_some_plural: '{{count}} oranges',
+                    banana: '{{count}} banana',
+                    banana_plural: '{{count}} bananas',
+                },
+            });
+        });
 
         it('transform simple plural with argument distinct to {{count}}', () => {
             const content = contentWithKey(
@@ -157,7 +198,7 @@ describe('to i18next transform', () => {
                     path_plural: '{{count}} items with {{price}}€ price',
                 }
             });
-        })
+        });
 
         it('transform composite plural with argument distinct to {{count}}', () => {
             const content = contentWithKey(
@@ -179,8 +220,8 @@ describe('to i18next transform', () => {
                     banana_plural: '{{count}} bananas with {{bananasPrice}}€ price',
                 }
             });
-        })
-    })
+        });
+    });
 
     describe('wrong transformation configs', () => {
         const lang = 'en';
@@ -284,7 +325,7 @@ describe('to i18next transform', () => {
                     new: {
                         path_0: '{{count}} item',
                     }
-                })
+                });
             });
 
             it('ja-JP', () => {
@@ -302,7 +343,7 @@ describe('to i18next transform', () => {
                     new: {
                         path_0: '{{count}} item',
                     }
-                })
+                });
             });
         })
 
@@ -322,7 +363,7 @@ describe('to i18next transform', () => {
                     new: {
                         path_0: '{{count}} item',
                     }
-                })
+                });
             });
 
             it('pl-PL', () => {
@@ -342,12 +383,12 @@ describe('to i18next transform', () => {
                         path_1: '{{count}} items',
                         path_2: '{{count}} itemzz',
                     }
-                })
+                });
             });
         });
     });
 
-    /*describe('CMS text validation', () => {
+    describe('CMS text validation', () => {
         const lang = 'es';
         it('detects missed arguments in CMS text', () => {
             const content = contentWithKey(
@@ -365,7 +406,7 @@ describe('to i18next transform', () => {
                 'CMS text "key %3$s with %5$s variables %1$s" is missing some intermediate arguments:\n'
                 + 'current arguments: %1$s, %3$s, %5$s\n'
                 + 'missing arguments: %2$s, %4$s\n'
-            )
-        })
-    })*/   
+            );
+        });
+    });
 })
