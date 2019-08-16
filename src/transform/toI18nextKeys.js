@@ -1,6 +1,7 @@
 const i18next = require('i18next');
 const isSimplePlural = require('./isSimplePlural');
 const parseCmsText = require('./parseCmsText');
+
 i18next.init();
 
 const getSuffixes = (lang) => {

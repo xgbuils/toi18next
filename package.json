@@ -9,7 +9,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "i18next": "^17.0.11"
+    "i18next": "^17.0.11",
+    "ramda": "^0.26.1"
   },
   "devDependencies": {
     "chai": "^4.2.0",
