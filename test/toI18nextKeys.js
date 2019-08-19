@@ -16,7 +16,7 @@ describe('to i18next transform', () => {
             })).to.be.deep.equal({
                 [outputName]: 'simple value'
             });
-        })
+        });
 
         it('transform key with arguments', () => {
             const text = 'key %2$s with %3$s variables %1$s';
@@ -29,7 +29,7 @@ describe('to i18next transform', () => {
             })).to.be.deep.equal({
                 [outputName]: 'key {{two}} with {{three}} variables {{one}}'
             });
-        })
+        });
 
         it('transform simple plural without argument', () => {
             const text = '$[_pl(%1$s|item|items)]';
@@ -42,7 +42,7 @@ describe('to i18next transform', () => {
                 [outputName]: 'item',
                 [`${outputName}_plural`]: 'items',
             });
-        })
+        });
 
         it('transform simple plural with argument', () => {
             const text = '$[_pl(%1$s|%1$s item|%1$s items)]';
@@ -320,4 +320,34 @@ describe('to i18next transform', () => {
             );
         });
     });
-})
+
+    describe('Escaping HTML', () => {
+        const lang = 'pl';
+        it('escapes HTML in simple key', () => {
+            const text = 'key <span>%2$s</span> with <div>%3$s</div> variables <script type="text/javascript">%1$s</script>';
+            const transform = Transform(lang);
+
+            expect(transform({
+                text,
+                outputName,
+                args: ['one', 'two', 'three'],
+            })).to.be.deep.equal({
+                [outputName]: 'key &lt;span&gt;{{two}}&lt;/span&gt; with &lt;div&gt;{{three}}&lt;/div&gt; variables &lt;script type=&quot;text/javascript&quot;&gt;{{one}}&lt;/script&gt;'
+            });
+        });
+
+        it('escapes HTML in plural key', () => {
+            const text = '$[_pl(%1$s|<b>%1$s</b> item|<i>%1$s</i> items|%1$s <b>itemzz</b>)]';
+            const transform = Transform(lang);
+
+            expect(transform({
+                text,
+                outputName,
+            })).to.be.deep.equal({
+                [`${outputName}_0`]: '&lt;b&gt;{{count}}&lt;/b&gt; item',
+                [`${outputName}_1`]: '&lt;i&gt;{{count}}&lt;/i&gt; items',
+                [`${outputName}_2`]: '{{count}} &lt;b&gt;itemzz&lt;/b&gt;',
+            });
+        });
+    });
+});

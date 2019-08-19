@@ -1,6 +1,7 @@
 const i18next = require('i18next');
 const isSimplePlural = require('./isSimplePlural');
 const parseCmsText = require('./parseCmsText');
+const escapeHtml = require('escape-html');
 
 i18next.init();
 
@@ -136,7 +137,7 @@ const Transform = (lang) => ({
     args,
     plurals = []
 }) => {
-    const tokens = parseCmsText(text, args);
+    const tokens = parseCmsText(escapeHtml(text), args);
     const suffixes = getSuffixes(lang);
     const config = {tokens, plurals, outputName, suffixes, text};
     return {
