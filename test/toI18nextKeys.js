@@ -18,19 +18,6 @@ describe('to i18next transform', () => {
             });
         })
 
-        it('transform key with variables', () => {
-            const text = 'key %2$s with %3$s variables %1$s';
-            const transform = Transform(lang);
-
-            expect(transform({
-                text,
-                outputName,
-                args: ['one', 'two', 'three'],
-            })).to.be.deep.equal({
-                [outputName]: 'key {{two}} with {{three}} variables {{one}}'
-            });
-        })
-
         it('transform key with arguments', () => {
             const text = 'key %2$s with %3$s variables %1$s';
             const transform = Transform(lang);
@@ -122,7 +109,7 @@ describe('to i18next transform', () => {
         });
 
         it('transform composite plurals with zero special case', () => {
-            const text = 'There are $[_pl0(%1$s|No oranges|%1$s orange|%1$s oranges)] and $[_pl(%2$s|%2$s banana|%2$s bananas)]';
+            const text = 'There are $[_pl0(%1$s|no oranges|%1$s orange|%1$s oranges)] and $[_pl(%2$s|%2$s banana|%2$s bananas)]';
             const transform = Transform(lang);
 
             expect(transform({
@@ -132,7 +119,7 @@ describe('to i18next transform', () => {
                 plurals: ['orange', 'banana'],
             })).to.be.deep.equal({
                 [outputName]: 'There are $t(orange, {count: {{numOranges}}}) and $t(banana, {count: {{numBananas}}})',
-                orange_none: 'No oranges',
+                orange_none: 'no oranges',
                 orange_some: '{{count}} orange',
                 orange_some_plural: '{{count}} oranges',
                 banana: '{{count}} banana',
