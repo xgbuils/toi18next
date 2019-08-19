@@ -1,10 +1,16 @@
 const R = require('ramda');
 const ToI18nextKeys = require('./toI18nextKeys');
 
-const FromPath = (cms) => (transform) => ({
-    ...transform,
-    text: R.path(transform.inputPath, cms),
-});
+const FromPath = (cms) => (transform) => {
+    if (!R.hasPath(transform.inputPath, cms)) {
+        const inputPath = transform.inputPath.map((e) => `"${e}"`).join(', ');
+        throw new Error(`CMS does not have a key in path [${inputPath}]`);
+    }
+    return {
+        ...transform,
+        text: R.path(transform.inputPath, cms),
+    }
+};
 
 const toPath = ({outputPath, keys}) => R.assocPath(outputPath, keys);
 
