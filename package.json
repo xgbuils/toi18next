@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "escape-html": "^1.0.3",
     "i18next": "^17.0.11",
     "ramda": "^0.26.1"
   },
