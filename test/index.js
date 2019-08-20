@@ -4,6 +4,7 @@ const cms = require('./examples/cms');
 const map = require('./examples/map');
 const nonExistentKeyMap = require('./examples/nonExistentKeyMap');
 const wrongArgsMap = require('./examples/wrongArgsMap');
+const htmlKeysMap = require('./examples/htmlKeysMap');
 const transform = require('../src/transform');
 
 const lang = 'en';
@@ -49,5 +50,17 @@ describe('Transform', () => {
             '2 CMS text arguments: %1$s, %2$s.\n' +
             '1 configuration arguments: {args: [\'number1\']}.\n'
         );
+    });
+
+    it('Escaping HTML', () => {
+        const lang = 'pl';
+        expect(transform(cms, htmlKeysMap, lang)).to.be.deep.equal({
+            path: {
+                key1: 'key &lt;span&gt;{{two}}&lt;/span&gt; with &lt;div&gt;{{three}}&lt;/div&gt; variables &lt;script type=&quot;text/javascript&quot;&gt;{{one}}&lt;/script&gt;',
+                key2_0: '&lt;b&gt;{{count}}&lt;/b&gt; item',
+                key2_1: '&lt;i&gt;{{count}}&lt;/i&gt; items',
+                key2_2: '{{count}} &lt;b&gt;itemzz&lt;/b&gt;'
+            }
+        });
     });
 });
